@@ -243,22 +243,52 @@ class Capture():
                 info += proto + " "
 
             elif details[0] == "UDP":
-                sport = packet.sprintf("{UDP:%UDP.sport%}").strip()
-                dport = packet.sprintf("{UDP:%UDP.dport%}").strip()
+                sport = packet.sprintf("{UDP:%r,UDP.sport%}").strip()
+                dport = packet.sprintf("{UDP:%r,UDP.dport%}").strip()
                 info += sport + " "
                 info += dport + " "
-                if (sport in "domain") | (dport in "domain"):
+                if (sport in "123") | (dport in "123"):
+                    info += "NTP "
+                elif (sport in "1645") | (dport in "1645"):
+                    info += "RADIUS "
+                elif (sport in "67") | (dport in "67"):
+                    info += "DHCP "
+                elif (sport in "53") | (dport in "53"):
                     info += "DNS "
+                elif (sport in "161") | (dport in "161"):
+                    info += "SNMP "
+                elif (sport in "500") | (dport in "500"):
+                    info += "ipsec "
+                elif (sport in "69") | (dport in "69"):
+                    info += "TFTP "
+                elif (sport in "1701") | (dport in "1701"):
+                    info += "L2TP "
                 else:
                     info += "未知 "
 
             elif details[0] == "TCP":
-                sport = packet.sprintf("{TCP:%TCP.sport%}").strip()
-                dport = packet.sprintf("{TCP:%TCP.dport%}").strip()
-                flags = packet.sprintf("{TCP:%TCP.flags%}").strip()
+                sport = packet.sprintf("{TCP:%r,TCP.sport%}").strip()
+                dport = packet.sprintf("{TCP:%r,TCP.dport%}").strip()
+                flags = packet.sprintf("{TCP:%r,TCP.flags%}").strip()
                 info += sport + " "
                 info += dport + " "
-                if (sport in "https") | (dport in "https"):
+                if (sport in "110") | (dport in "110"):
+                    info += "POP3 "
+                elif (sport in "143") | (dport in "143"):
+                    info += "IMAP "
+                elif (sport in "25") | (dport in "25"):
+                    info += "SMTP "
+                elif (sport in "23") | (dport in "23"):
+                    info += "Telnet "
+                elif (sport in "1723") | (dport in "1723"):
+                    info += "PPTP "
+                elif (sport in "80") | (dport in "80"):
+                    info += "HTTP "
+                elif (sport in "21") | (dport in "21"):
+                    info += "FTP "
+                elif (sport in "20") | (dport in "20"):
+                    info += "FTP "
+                elif (sport in "443") | (dport in "443"):
                     info += "HTTPS "
                 else:
                     info += "未知 "
