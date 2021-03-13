@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+
+  <div  class="layui-row layui-col-space10" style="padding: 10px; background-color: #F2F2F2;">
+    <div class="layui-col-md6 ">
+        <div class="layui-row layui-col-space10">
+        <div class="layui-col-md3">
+          <div class="layui-card">
+            <div class="layui-card-header">当天探针数</div>
+            <div class="layui-card-body" id="todayProbe">
+              ---
+            </div>
+          </div>
+        </div>
+            <div class="layui-col-md3">
+          <div class="layui-card">
+            <div class="layui-card-header">当天数据总量</div>
+            <div class="layui-card-body" id="todayNum">
+              ---
+            </div>
+          </div>
+        </div>
+        <div class="layui-col-md3">
+          <div class="layui-card">
+            <div class="layui-card-header">系统探针数</div>
+            <div class="layui-card-body" id="probeNum">
+              ---
+            </div>
+          </div>
+        </div>
+            <div class="layui-col-md3">
+          <div class="layui-card">
+            <div class="layui-card-header">系统数据总量</div>
+            <div class="layui-card-body" id="dataNum">
+              ---
+            </div>
+          </div>
+        </div>
+        </div>
+        <div class="layui-col-md12 layui-card"  >
+        <div class="layui-card-header">流量上报趋势图</div>
+            <div class="layui-card-body"  style="width:700px; height:460px;" id="uploadNum">
+
+            </div>
+    </div>
+    </div>
+
+    <div class="layui-col-md6  layui-col-space5"  >
+        <div class="layui-card">
+            <div class="layui-card-header ">探针位置分布图</div>
+            <div class="layui-card-body" id="bar" style="width:700px; height:550px;"/>
+        </div>
+
+    </div>
+</div>
+
+
+{% endblock %}

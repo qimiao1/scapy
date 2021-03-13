@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block content %}
+
+
+  <div  class="layui-row layui-col-space10" style="padding: 10px; background-color: #F2F2F2;">
+    <div class="layui-col-md4 ">
+
+        <div class="layui-col-md12 layui-card" >
+            <div class="layui-card-header">上报流的总量</div>
+            <div class="layui-card-body" style="width:500px; height:190px;" id="total_num">
+            </div>
+        </div>
+
+
+        <div class="layui-col-md12 layui-card"  >
+            <div class="layui-card-body"  style="width:500px; height:180px;" >
+                <div class="layui-tab layui-tab-card" lay-filter="demo" style="width:460px;">
+                      <ul class="layui-tab-title">
+                        <li class="layui-this">通信流数用户排名</li>
+                        <li>通信包数用户排名</li>
+                      </ul>
+                      <div class="layui-tab-content" style="height: 120px;">
+                        <div class="layui-tab-item layui-show" >
+                            <div class="layui-form" style="height:90px;width:450px">
+                                <div class="layui-form-item">
+                                    <div class="layui-row">
+                                        <div class="layui-inline">
+                                            <label class="layui-form-label" style="width:20px">1. </label>
+                                            <label class="layui-form-label" id="1" style="width:320px">---</label>
+                                        </div>
+                                    </div>
+                                    <div class="layui-row">
+                                        <div class="layui-inline">
+                                            <label class="layui-form-label" style="width:20px">2. </label>
+                                            <label class="layui-form-label" id="2" style="width:320px">---</label>
+                                        </div>
+                                    </div>
+                                    <div class="layui-row">
+                                        <div class="layui-inline">
+                                            <label class="layui-form-label" style="width:20px">3. </label>
+                                            <label class="layui-form-label" id="3" style="width:320px">---</label>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-tab-item">
+                            <div class="layui-form" style="height:90px;width:450px">
+                                <div class="layui-form-item">
+                                    <div class="layui-row">
+                                        <div class="layui-inline">
+                                            <label class="layui-form-label" style="width:20px">1. </label>
+                                            <label class="layui-form-label" id="4" style="width:320px">---</label>
+                                        </div>
+                                    </div>
+                                    <div class="layui-row">
+                                        <div class="layui-inline">
+                                            <label class="layui-form-label" style="width:20px">2. </label>
+                                            <label class="layui-form-label" id="5" style="width:320px">---</label>
+                                        </div>
+                                    </div>
+                                    <div class="layui-row">
+                                        <div class="layui-inline">
+                                            <label class="layui-form-label" style="width:20px">3. </label>
+                                            <label class="layui-form-label" id="6" style="width:320px">---</label>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                      </div>
+                </div>
+            </div>
+
+
+
+        </div>
+    </div>
+
+    <div class="layui-col-md8  layui-col-space5"  >
+        <div class="layui-card">
+            <div class="layui-card-header ">总交互图</div>
+            <div class="layui-card-body"  style="width:900px; height:400px;" id="geo_line">
+            </div>
+        </div>
+    </div>
+
+</div>
+    <div class="layui-card" style="height:360px">
+        <div class="layui-card-header">当前正在上报的数据</div>
+        <div class="layui-card-body">
+            <table class="layui-hide" id="nowflow" > </table>
+        </div>
+        </div>
+    </div>
+
+<script>
+      var geo_line = echarts.init(document.getElementById('geo_line'), 'white', {renderer: 'canvas'});
+      var total_num = echarts.init(document.getElementById('total_num'), 'white', {renderer: 'canvas'});
+    $(
+        function () {
+            fetchTotalNum(total_num);
+            fetchGeoLine(geo_line);
+            fetchRank();
+            fetchTable();
+            setInterval(fetchTotalNum, 2000);
+            setInterval(fetchGeoLine, 5000);
+<!--            setInterval(fetchRank, 5000);-->
+            setInterval(fetchTable, 5000);
+        }
+    );
+function fetchGeoLine() {
+    $.ajax({
+      type: "GET",
+       url: "http://127.0.0.1:5000/geo_line",
+        dataType: 'json',
+        success: function (result) {
+            geo_line.setOption(result);
+       }
+     });
+}
+function fetchTotalNum() {
+    $.ajax({
+      type: "GET",
+       url: "http://127.0.0.1:5000/total_num",
+        dataType: 'json',
+        success: function (result) {
+            total_num.setOption(result);
+       }
+     });
+}
+function fetchRank() {
+    $.ajax({
+      type: "GET",
+       url: "http://127.0.0.1:5000/rank1",
+        dataType: 'json',
+        success: function (result) {
+
+            for(var key in result){
+                document.getElementById(key).innerHTML=result[key];
+            }
+       }
+     });
+}
+  function fetchTable() {
+  layui.use('table', function(){
+    var table = layui.table;
+        table.reload('nowflow', {
+                page:{curr:1}
+
+        });
+        });
+  }
+</script>
+
+
+{% endblock %}
