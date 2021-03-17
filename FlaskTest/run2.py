@@ -1,5 +1,6 @@
 import geoip2.database
 import pymongo
+import dns
 from flask import Flask, render_template, redirect, request, jsonify,g,session
 import time,datetime
 from pyecharts import options as opts
@@ -321,7 +322,7 @@ def get_packet_nums(col,now,week_ago):
 # 详细记录***************************************************************************单个用户单个用户单个用户*******************************
 @app.route('/singleUser')
 def singleUser():
-    return render_template('singleUser.html')
+    return render_template('singleUser2.html')
 
 
 # 向select组件中添加选项
@@ -692,7 +693,7 @@ class Tool():
         if col is None:
             myclient = pymongo.MongoClient(
                 "mongodb+srv://ws0:1298207618@cluster0.kk8ut.mongodb.net/?retryWrites=true&w=majority")
-            db = myclient.test5
+            db = myclient.test6
             col = db.trafficmodels
             g.col = col
         return col
@@ -741,7 +742,7 @@ class Tool():
                                {"$project": {
                                    "_id": 0, "srcIP": 1, "desIP": 1, "srcPort": 1, "desPort": 1, "protocol": 1,
                                    "appPro": 1, "upNums": 1, "upBytes": 1,  "downNums": 1,  "downBytes": 1,
-                                   "place": 1,   "user": 1,
+                                   "place": 1,   "user": 1, 'data': 1,
                                    "startTime": {"$dateToString": {"format": "%Y-%m-%d %H:%M:%S",
                                                                    "date": {
                                                                        "$toDate": {"$multiply": ["$startTime", 1000]}},
@@ -762,8 +763,8 @@ class Tool():
         res = g.col.aggregate([{"$match": {"user": user, "successTime": {"$gte": begin, "$lte": end}}},
                              {"$project": {
                                  "_id": 0, "srcIP": 1, "desIP": 1, "srcPort": 1, "desPort": 1, "protocol": 1,
-                                 "appPro": 1,
-                                 "upNums": 1, "upBytes": 1, "downNums": 1, "downBytes": 1, "place": 1, "user": 1,
+                                 "appPro": 1,  "upNums": 1, "upBytes": 1, "downNums": 1,
+                                 "downBytes": 1, "place": 1, "user": 1,  'data': 1,
                                  "startTime": {"$dateToString": {"format": "%Y-%m-%d %H:%M:%S",
                                                                  "date": {
                                                                      "$toDate": {"$multiply": ["$startTime", 1000]}},
@@ -785,8 +786,8 @@ class Tool():
             , "successTime": {"$gte": begin2, "$lte": end2}}},
                              {"$project": {
                                  "_id": 0, "srcIP": 1, "desIP": 1, "srcPort": 1, "desPort": 1, "protocol": 1,
-                                 "appPro": 1,
-                                 "upNums": 1, "upBytes": 1, "downNums": 1, "downBytes": 1, "place": 1, "user": 1,
+                                 "appPro": 1,   "upNums": 1, "upBytes": 1,
+                                 "downNums": 1, "downBytes": 1, "place": 1, "user": 1, 'data': 1,
                                  "startTime": {"$dateToString": {"format": "%Y-%m-%d %H:%M:%S",
                                                                  "date": {
                                                                      "$toDate": {"$multiply": ["$startTime", 1000]}},
