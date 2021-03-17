@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+{% block content %}
+
+  <div  class="layui-col-space10" style="padding: 10px; background-color: #F2F2F2;">
+      <div class="layui-row">
+          <div class="layui-col-md3" style="margin:0 0 0 -5px">
+                <div class=" layui-card ">
+                    <div class="layui-card-body">
+
+                        <div class="layui-row">
+                            <label class="layui-form-label" style="margin:0 0 0 -30px">会话数量:</label>
+                            <label class="layui-form-label" id="flownums">---</label>
+                        </div>
+
+                    </div>
+                </div>
+                <div class=" layui-card">
+                    <div class="layui-card-header">筛选流的条件：</div>
+                    <div class="layui-card-body" style="height:165px">
+                        <form class="layui-form" >
+                            <div class="layui-form-item">
+                                <div class="layui-inline">
+                                    <label class="layui-form-label" style="margin:0 0 0 -20px">探针的ID:</label>
+                                    <div class="layui-input-inline" style="width:220px">
+                                        <select name="user" lay-verify="required" id="selectuser" lay-filter="userid">
+
+                                        </select>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="layui-form-item">
+                                <div class="layui-inline">
+                                    <label class="layui-form-label" style="margin:0 0 0 -20px">流上报时间:</label>
+                                    <div class="layui-input-inline" style="width:220px">
+                                        <input type="text" class="layui-input" id="successTime" placeholder=" - ">
+                                      </div>
+                                </div>
+
+                            </div>
+                            <div class="layui-form-item">
+                                <div class="layui-inline">
+                                    <label class="layui-form-label" style="margin:0 0 0 -20px">流开始时间:</label>
+                                    <div class="layui-input-inline" style="width:220px">
+                                        <input type="text" class="layui-input" id="beginTime" placeholder=" - ">
+                                      </div>
+                                </div>
+
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class=" layui-card layui-col-md3"  style="margin:0 5px 0 5px">
+                    <div class="layui-card-header">会话占比图</div>
+                    <div class="layui-card-body" style="height:240px" id="account">
+                    </div>
+            </div>
+            <div class="layui-col-md6 layui-card  " style="margin:0 -5px 0 0">
+                <div class="layui-card-header">目标IP位置图</div>
+                <div class="layui-card-body" style="height:240px" id="geo_ip"></div>
+          </div>
+      </div>
+
+    <div class="layui-row" >
+
+        <div class=" layui-card"    >
+            <div class="layui-card-header ">会话详情图</div>
+             <div class="layui-card-body" style="height:540px" >
+                 <table class="layui-hide" id="test"  lay-filter="test"> </table>
+             </div>
+        </div>
+    </div>
+      <div class="container"  style="margin-top: 1em;">
+        <div class="row">
+            <pre id="json-renderer"></pre>
+        </div>
+    </div>
+
+
+ <script>
+$(document).ready(function() {
+	layui.use(['form','table','laydate'], function(){
+		var form = layui.form;
+        var laydate = layui.laydate;
+        var table = layui.table;
+        table.on('tool(test)', function(obj){
+            var flow = obj.data;
+            if(obj.event === 'look'){
+                data = flow.data;
+
+                var datas = data.split("}{");
+                if (datas.length > 1){
+                    for (var i = 0;i< datas.length;i++){
+                        if(i == 0){
+                            data = '{"1":'+datas[i];
+                            console.log(data);
+                        }else if(i!=(datas.length -1)){
+                            var num = (i+1)+"";
+                            data += '},"'+num+'":{'+datas[i];
+                            console.log(data);
+                        }else {
+                            var num = (i+1)+"";
+                            data += '},"'+num+'":{'+datas[i]+"}";
+                            console.log(data);
+                        }
+                    }
+                }
+
+
+
+<!--                data = data.replace(/}{/g, ",");-->
+                console.log(data);
+                data = eval('(' + data + ')');
+<!--                data = JSON.stringify(data);-->
+
+                layer.open({
+
+                    type: 1,   //类型代表在页面加载显示
+                    content: $("#json-renderer"),
+                    success:function(){
+                        $("#json-renderer").JSONView(data,{collapsed: false, withQuotes: true});
+                    }
+                });
+
+            }
+          });
+
+
+        var option = "<option value='-1'>请选择用户</option>";//初始化option的选项
+        $.ajax({
+            url: "/selectuser",
+            type: 'GET'
+        })
+        .done(function(datas) {
+
+            for(var key in datas){
+
+                option+="<option value='"+datas[key]+"'>"+datas[key]+"</option>";//拼接option中的内容
+                	$("#selectuser").html(option);//将option的拼接内容加入select中，注意选择器是select的ID
+            }
+            form.render('select');//重点：重新渲染select
+        })
+        .fail(function() {
+            console.log("error");
+        });
+        var userid = "";
+        var begintime = "";
+        var successtime = "";
+<!--        首先在这里应该先定义三个变量，作为以后的筛选条件，以及ajax请求传递的参数-->
+<!--        对选择出的用户进行查询，得到他的会话数量，会话详情，已经会话IP图还有会话占比-->
+        form.on('select(userid)', function(data){
+            console.log(data.value); //得到被选中的值
+            userid = data.value;
+            $.ajax({
+             data: {"beginTime":begintime,"successTime":successtime,"user":userid},
+             url: "http://127.0.0.1:5000/query",
+            dataType: 'json',
+            success: function (res) {
+                var nums = res['nums'];
+                document.getElementById("flownums").innerHTML=res["nums"];
+                console.log(successtime+"reload");
+                table.reload('test', {
+                    where: {
+                        user:data.value,
+                        beginTime:begintime,
+                        successTime:successtime
+                    }
+
+                });
+                var account = echarts.init(document.getElementById('account'), 'white', {renderer: 'canvas'});
+               var geo_ip = echarts.init(document.getElementById('geo_ip'), 'white', {renderer: 'canvas'});
+               $.ajax({
+                    data: {"beginTime":begintime,"successTime":successtime,"user":userid},
+                    type: "GET",
+                    url: "http://127.0.0.1:5000/geo_ip",
+                    dataType: 'json',
+                    success: function (result) {
+                        geo_ip.setOption(result);
+                    }
+                });
+                $.ajax({
+                    data: {"beginTime":begintime,"successTime":successtime,"user":userid},
+                    type: "GET",
+                    url: "http://127.0.0.1:5000/account",
+                    dataType: 'json',
+                    success: function (result) {
+                        account.setOption(result);
+                    }
+                });
+
+            }
+          });
+        });
+<!--        对选择的时间段进行筛选符合条件的数据，并进行展示-->
+        laydate.render({
+            elem: '#beginTime'
+            ,type: 'datetime'
+            ,range: true
+            ,max: 1
+            ,trigger: 'click'
+            ,done: function(value,date,endDate){
+                console.log("上传时间");//在这里对选择的时间段进行赋值
+                begintime = value;
+                table.reload('test', {
+                    where: {
+                        user:userid,
+                        beginTime:begintime,
+                        successTime:successtime
+                    }
+
+                });
+                var account = echarts.init(document.getElementById('account'), 'white', {renderer: 'canvas'});
+               var geo_ip = echarts.init(document.getElementById('geo_ip'), 'white', {renderer: 'canvas'});
+               $.ajax({
+                    data: {"beginTime":begintime,"successTime":successtime,"user":userid},
+                    type: "GET",
+                    url: "http://127.0.0.1:5000/geo_ip",
+                    dataType: 'json',
+                    success: function (result) {
+                        geo_ip.setOption(result);
+                    }
+                });
+                $.ajax({
+                    data: {"beginTime":begintime,"successTime":successtime,"user":userid},
+                    type: "GET",
+                    url: "http://127.0.0.1:5000/account",
+                    dataType: 'json',
+                    success: function (result) {
+                        account.setOption(result);
+                    }
+                });
+            }
+          });
+        laydate.render({
+            elem: '#successTime'
+            ,type: 'datetime'
+            ,range: true
+            ,max: 1
+            ,trigger: 'click'
+            ,done: function(value,date,endDate){
+                console.log(value);//在这里对选择的时间段进行赋值
+                successtime = value;
+                table.reload('test', {
+                    where: {
+                        user:userid,
+                        beginTime:begintime,
+                        successTime:successtime
+                    }
+
+                });
+                var account = echarts.init(document.getElementById('account'), 'white', {renderer: 'canvas'});
+               var geo_ip = echarts.init(document.getElementById('geo_ip'), 'white', {renderer: 'canvas'});
+               $.ajax({
+                    data: {"beginTime":begintime,"successTime":successtime,"user":userid},
+                    type: "GET",
+                    url: "http://127.0.0.1:5000/geo_ip",
+                    dataType: 'json',
+                    success: function (result) {
+                        geo_ip.setOption(result);
+                    }
+                });
+                $.ajax({
+                    data: {"beginTime":begintime,"successTime":successtime,"user":userid},
+                    type: "GET",
+                    url: "http://127.0.0.1:5000/account",
+                    dataType: 'json',
+                    success: function (result) {
+                        account.setOption(result);
+                    }
+                });
+            }
+          });
+
+
+	});
+});
+
+      var geo_ip = echarts.init(document.getElementById('geo_ip'), 'white', {renderer: 'canvas'});
+
+      var account = echarts.init(document.getElementById('account'), 'white', {renderer: 'canvas'});
+    $(
+        function () {
+            fetchGeoIP(geo_ip);
+
+            fetchAccount(account);
+        }
+    );
+function fetchGeoIP() {
+    $.ajax({
+      type: "GET",
+       url: "http://127.0.0.1:5000/geo_ip",
+        dataType: 'json',
+        success: function (result) {
+            geo_ip.setOption(result);
+       }
+     });
+}
+
+function fetchAccount() {
+    $.ajax({
+      type: "GET",
+       url: "http://127.0.0.1:5000/account",
+        dataType: 'json',
+        success: function (result) {
+            account.setOption(result);
+       }
+     });
+}
+</script>
+
+
+
+
+  </div>
+
+
+{% endblock %}
