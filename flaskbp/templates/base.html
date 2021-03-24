@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>开始使用layui</title>
+    <link rel="stylesheet" href="../static/css/layui.css">
+    <link rel="stylesheet" href="../static/css/jquery.jsonview.css">
+    <script src="https://cdn.bootcss.com/jquery/3.0.0/jquery.min.js"></script>
+    <script type="text/javascript" src="https://assets.pyecharts.org/assets/echarts.min.js"></script>
+    <script type="text/javascript" src="https://assets.pyecharts.org/assets/maps/china.js"></script>
+    <script type="text/javascript" src="https://assets.pyecharts.org/assets/maps/world.js"></script>
+    <script src="../static/js/jquery.jsonview.js"></script>
+</head>
+<body>
+<ul class="layui-nav layui-bg-cyan" >
+    <div class="layui-col-md-offset4 ">
+
+        <li class="layui-nav-item " ><a href="./">概览页</a></li>
+        <li class="layui-nav-item "><a href="./allUser">采集概况</a></li>
+        <li class="layui-nav-item "><a href="./singleUser">详细记录</a></li>
+        <li class="layui-nav-item " >
+            <a href="">账户管理</a>
+            <dl class="layui-nav-child layui-nav" lay-filter="test">
+                <dd><a href="./login">登录注册</a></dd>
+                <dd><a href="./update">添加用户</a></dd>
+                <dd><a href="./logout" >退出登录</a></dd>
+            </dl>
+        </li>
+    </div>
+
+</ul>
+<div id="content" style="background-color: #F2F2F2">
+    {% block content %}{% endblock %}
+</div>
+
+
+<script src="../static/js/layui.js"></script>
+<script>
+
+    window.onload=function(){
+        url = window.location.pathname;
+        console.log(url);
+        $("a[href='."+url+"']").parent().addClass('layui-this');
+    }
+
+ layui.use('table', function(){
+  var table = layui.table;
+
+  table.render({
+    elem: '#test'
+    ,url:'http://127.0.0.1:5000/detail'
+    ,cellMinWidth: 20
+    ,cols: [[
+    {field:'user', width:80, title: '用户'},
+    {field:'place', width:80, title: '位置'},
+      {field:'srcIP', width:100, title: '源IP', sort: true}
+      ,{field:'desIP', width:100,  title: '目的IP', sort: true},
+      {field:'protocol', width:80,   title: '协议', sort: true}
+      ,{field:'srcPort',width:100,   title: '源端口号', sort: true},
+      {field:'desPort', width:100,   title: '目的端口号', sort: true}
+      ,{field:'appPro', width:80, title: '应用层协议', sort: true},
+      {field:'upNums',  width:100, title: '上行包数', sort: true}
+      ,{field:'upBytes', width:100,  title: '上行字节数', sort: true},
+      {field:'downNums', width:100,  title: '下行包数', sort: true}
+      ,{field:'downBytes', width:100,  title: '下行字节数', sort: true},
+      {field:'startTime', width:80, title: '开始时间', sort: true}
+      ,{field:'endTime', width:80, title: '结束时间', sort: true},
+      {field:'successTime', width:80, title: '上报时间', sort: true}
+      ,{field:'data', width:80, title: '详情', event: 'look', style:'cursor: pointer;'}
+
+
+    ]]
+    ,page: false
+    ,height:520
+    ,parseData: function(res){ //res 即为原始返回的数据
+        document.getElementById("flownums").innerHTML=res.count;
+        return {
+        "code": res.code, //解析接口状态
+        "msg": res.msg, //解析提示文本
+        "count": res.count, //解析数据长度
+        "data": res.data //解析数据列表
+        };
+    }
+  });
+  table.render({
+    elem: '#nowflow'
+    ,url:'http://127.0.0.1:5000/nowflow'
+    ,page: false
+    ,cols: [[
+    {field:'user', width:80, title: '用户'},
+    {field:'place', width:80, title: '位置'},
+      {field:'srcIP', width:100, title: '源IP', sort: true}
+      ,{field:'desIP', width:100,  title: '目的IP', sort: true},
+      {field:'protocol', width:80,   title: '协议', sort: true}
+      ,{field:'srcPort',width:80,   title: '源端口号', sort: true},
+      {field:'desPort', width:80,   title: '目的端口号', sort: true}
+      ,{field:'appPro', width:100, title: '应用层协议', sort: true},
+      {field:'upNums',  width:100, title: '上行包数', sort: true}
+      ,{field:'upBytes', width:100,  title: '上行字节数', sort: true},
+      {field:'downNums', width:100,  title: '下行包数', sort: true}
+      ,{field:'downBytes', width:100,  title: '下行字节数', sort: true},
+      {field:'startTime', width:100, title: '开始时间', sort: true}
+      ,{field:'endTime', width:100, title: '结束时间', sort: true},
+      {field:'successTime', width:100, title: '上报时间', sort: true}
+       ,{field:'data', width:80, title: '详情', event: 'look', style:'cursor: pointer;'}
+
+    ]]
+
+  });
+
+
+
+
+
+
+
+});
+layui.use(['element','layer'], function(){
+  var element = layui.element;
+  var layer = layui.layer;
+
+        element.on('tab(demo)', function(data){
+            // console.log(data.index); //得到当前Tab的所在下标
+            if (data.index == 0) {
+                console.log('流数排名');
+                $.ajax({
+                  type: "GET",
+                   url: "http://127.0.0.1:5000/rank1",
+                    dataType: 'json',
+                    success: function (result) {
+                        for(var key in result){
+                            console.log(result[key]);
+                            document.getElementById(key).innerHTML=result[key];
+                        }
+                   }
+                 });
+
+            }else if(data.index == 1){
+                console.log('包数排名');
+                $.ajax({
+                  type: "GET",
+                   url: "http://127.0.0.1:5000/rank2",
+                    dataType: 'json',
+                    success: function (result) {
+                        for(var key in result){
+
+                            document.getElementById(key).innerHTML=result[key];
+                        }
+                   }
+                 });
+            }
+        });
+
+  element.on('nav(test)', function(elem){
+    if(elem.text()=="退出登录"){
+        layer.msg("退出");
+<!--        layer.confirm('确定要退出吗?', {icon: 3, title:'提示',time:5000}, function(index){-->
+<!--              layer.msg("退出");-->
+<!--            layer.close(index);-->
+<!--        });-->
+    }
+
+
+  });
+});
+layui.use(['form','table'], function(){
+  var form = layui.form;
+    var table = layui.table;
+    //自定义验证规则
+  form.verify({
+    pass: [
+      /^[\S]{6,12}$/
+      ,'密码必须6到12位，且不能出现空格'
+    ]
+  });
+  //监听提交
+   form.on('submit(check)', function (data) {
+         $.ajax({
+            type:'post',
+             data: data.field,
+             url: "http://127.0.0.1:5000/check",
+            dataType: 'json',
+            success: function (res) {
+                if(res =="1"){
+                    alert("登录成功");
+                    window.location.href = 'http://127.0.0.1:5000/index';
+                }
+                else{
+                    alert("用户名或密码错误");
+                    window.location.href = 'http://127.0.0.1:5000/login';
+                }
+            }
+          });
+
+    });
+    form.on('submit(update)', function (data) {
+         console.log(data.field);
+         $.ajax({
+            type:'post',
+             data: data.field,
+             url: "http://127.0.0.1:5000/modify",
+            dataType: 'json',
+            success: function (res) {
+                alert("添加修改成功");
+                window.location.href = 'http://127.0.0.1:5000/allUser';
+            }
+          });
+
+    });
+
+
+});
+var chart = echarts.init(document.getElementById('bar'), 'white', {renderer: 'canvas'});
+var line = echarts.init(document.getElementById('uploadNum'), 'white', {renderer: 'canvas'});
+$(
+    function () {
+      fetchNum();
+      fetchData(chart);
+      fetchUpload(line);
+      setInterval(fetchNum, 2000);
+      setInterval(fetchData, 5000);
+      setInterval(fetchUpload, 5000);
+      setInterval(fetchTable, 2000);
+    }
+);
+
+  function fetchNum(){
+      $.ajax({
+      type: "GET",
+       url: "http://127.0.0.1:5000/findNum",
+        dataType: 'json',
+        success: function (result) {
+            tpnum = result.todayProbe;
+            tnum = result.todayNum;
+            pnum = result.probeNum;
+            dnum = result.dataNum;
+         var todayProbe = document.getElementById("todayProbe").innerHTML=tpnum;
+         var todayNum = document.getElementById("todayNum").innerHTML=tnum;
+         var probeNum = document.getElementById("probeNum").innerHTML=pnum;
+         var dataNum = document.getElementById("dataNum").innerHTML=dnum;
+       }
+     });
+  }
+function fetchData() {
+    $.ajax({
+      type: "GET",
+       url: "http://127.0.0.1:5000/barChart",
+        dataType: 'json',
+        success: function (result) {
+         chart.setOption(result);
+       }
+     });
+}
+function fetchUpload() {
+    $.ajax({
+      type: "GET",
+       url: "http://127.0.0.1:5000/line",
+        dataType: 'json',
+        success: function (result) {
+         line.setOption(result);
+       }
+     });
+}
+
+
+
+
+
+</script>
+</body>
+</html>
